@@ -29,15 +29,8 @@ COLUMNAS_DANIO_DETAILS: tuple[str, ...] = (
 
 
 def procesar_details(datos: pd.DataFrame) -> pd.DataFrame:
-    """Procesa el dataset NOAA Storm Events details.
+    #Procesa el dataset NOAA Storm Events details
 
-    Side effects:
-        No tiene. No modifica el DataFrame recibido.
-
-    Raises:
-        ValueError: Si faltan columnas críticas, hay nulos críticos,
-        event_id duplicado o daños con formato inválido.
-    """
     datos_procesados = normalizar_columnas(datos)
     datos_procesados = limpiar_strings_vacios(datos_procesados)
 
@@ -55,11 +48,7 @@ def procesar_details(datos: pd.DataFrame) -> pd.DataFrame:
 
 
 def convertir_columnas_danio_details(datos: pd.DataFrame) -> pd.DataFrame:
-    """Convierte columnas de daños de details si están presentes.
-
-    Side effects:
-        No tiene. No modifica el DataFrame recibido.
-    """
+    #Convierte columnas de daños de details si están presentes
     datos_convertidos = datos.copy()
 
     for columna in COLUMNAS_DANIO_DETAILS:

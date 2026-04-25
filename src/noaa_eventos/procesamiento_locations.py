@@ -18,15 +18,8 @@ COLUMNAS_OBLIGATORIAS_LOCATIONS: frozenset[str] = frozenset(
 
 
 def procesar_locations(datos: pd.DataFrame) -> pd.DataFrame:
-    """Procesa el dataset NOAA Storm Events locations.
+    #Procesa el dataset NOAA Storm Events locations.
 
-    Side effects:
-        No tiene. No modifica el DataFrame recibido.
-
-    Raises:
-        ValueError: Si faltan columnas críticas, hay nulos críticos
-        o hay claves compuestas duplicadas.
-    """
     datos_procesados = normalizar_columnas(datos)
     datos_procesados = limpiar_strings_vacios(datos_procesados)
 
@@ -44,14 +37,8 @@ def procesar_locations(datos: pd.DataFrame) -> pd.DataFrame:
 
 
 def validar_clave_locations_unica(datos: pd.DataFrame) -> None:
-    """Valida unicidad de la clave event_id + location_index.
+    #Valida unicidad de la clave event_id + location_index.
 
-    Side effects:
-        No tiene.
-
-    Raises:
-        ValueError: Si hay claves compuestas duplicadas.
-    """
     columnas_clave = ["event_id", "location_index"]
     mascara_duplicados = datos.duplicated(
         subset=columnas_clave,
