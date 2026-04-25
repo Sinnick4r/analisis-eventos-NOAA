@@ -399,7 +399,6 @@ No incluido por ahora:
 
 ### Prioridad alta
 
-- agregar `.gitattributes` para normalizar finales de línea;
 - agregar un reporte simple de validación de outputs;
 - revisar visualización Power BI con los CSV procesados actuales.
 
