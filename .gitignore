@@ -1,0 +1,25 @@
+# Datos originales / RAW
+Data Original/
+data/raw/
+data/interim/
+data/processed/
+
+# Mantener estructura futura si se crean .gitkeep
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+
+# Artefactos Power BI pesados
+*.pbix
+*.pbit
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+
+# Entorno
+.env
