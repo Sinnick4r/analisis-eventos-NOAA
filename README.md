@@ -73,6 +73,10 @@ data/processed/
 ├── StormEvents_locations_Limpio.csv
 └── StormEvents_fatalities_Limpio.csv
 ```
+## Vista ejecutiva
+
+![Dashboard ejecutivo NOAA 2026](docs/assets/bi/dashboard_noaa_2026.png)
+
 
 ## Stack técnico
 

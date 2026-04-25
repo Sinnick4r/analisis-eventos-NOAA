@@ -42,3 +42,5 @@ __pycache__/
 Thumbs.db
 .vscode/
 .idea/
+# Reportes generados
+reports/bi/

@@ -8,11 +8,15 @@ dependencies = [
     "pandas>=2.2.0",
     "pyyaml>=6.0.0",
     "httpx>=0.27.0",
+    "matplotlib>=3.10.9",
 ]
+
 
 [project.scripts]
 noaa-descargar = "noaa_eventos.cli_descarga:main"
 noaa-procesar = "noaa_eventos.cli:main"
+noaa-bi = "noaa_eventos.cli_bi:main"
+
 
 [dependency-groups]
 dev = [
