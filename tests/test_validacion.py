@@ -52,6 +52,7 @@ def test_validar_columna_sin_duplicados_falla_si_hay_duplicados() -> None:
     with pytest.raises(ValueError, match="contiene valores duplicados"):
         validar_columna_sin_duplicados(datos, "event_id")
 
+
 def test_validar_columnas_sin_nulos_no_falla_si_no_hay_nulos() -> None:
     datos = pd.DataFrame(
         {
@@ -64,6 +65,7 @@ def test_validar_columnas_sin_nulos_no_falla_si_no_hay_nulos() -> None:
         datos,
         frozenset({"event_id", "event_type"}),
     )
+
 
 def test_validar_columnas_sin_nulos_falla_si_columna_no_existe() -> None:
     datos = pd.DataFrame({"event_id": [1, 2]})
