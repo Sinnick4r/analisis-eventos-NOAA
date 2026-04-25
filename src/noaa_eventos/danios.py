@@ -1,6 +1,8 @@
 import re
 from typing import Final
 
+import pandas as pd
+
 MULTIPLICADORES_DANIO: Final[dict[str, float]] = {
     "": 1.0,
     "K": 1_000.0,
@@ -15,10 +17,9 @@ PATRON_DANIO: Final[re.Pattern[str]] = re.compile(
 
 
 def convertir_danio_estimado(valor_crudo: object) -> float | None:
+    # Convierte valores de daño NOAA con sufijos K, M o B.
 
-    #Convierte valores de daño NOAA con sufijos K, M o B.
-
-    if valor_crudo is None:
+    if pd.isna(valor_crudo):
         return None
 
     valor_texto = str(valor_crudo).strip()
