@@ -171,8 +171,6 @@ uv run pytest
 │   └── samples/
 ├── docs/
 │   └── decisiones/
-├── legacy/
-├── notebooks/
 ├── reports/
 │   ├── powerbi/
 │   └── validacion/
@@ -354,17 +352,11 @@ uv run noaa-procesar ...
 
 Esto permite conservar el RAW como snapshot auditable antes de generar datos procesados.
 
-### No usar notebooks como producción
-
-Los notebooks pueden usarse para exploración, pero la lógica reutilizable vive en `src/noaa_eventos/`.
-
-### No agregar ML todavía
+### No  se agrega ML
 
 El proyecto no incluye modelos predictivos. Antes de avanzar hacia ML, se prioriza cerrar contratos de datos, reproducibilidad, validación y visualización.
 
 ## Power BI
-
-El archivo Power BI original se conserva como parte de la etapa exploratoria del proyecto.
 
 La salida moderna esperada para Power BI son los CSV procesados:
 
