@@ -18,7 +18,6 @@ PATRON_ARCHIVO_NOAA: Final[re.Pattern[str]] = re.compile(
 
 @dataclass(frozen=True, slots=True)
 class ArchivoNoaa:
-
     nombre: str
     tipo: TipoArchivoNoaa
     version_ftp: str
@@ -28,14 +27,12 @@ class ArchivoNoaa:
 
 def parsear_nombre_archivo_noaa(nombre_archivo: str) -> ArchivoNoaa:
 
-    #Extrae metadata 
+    # Extrae metadata
 
     coincidencia = PATRON_ARCHIVO_NOAA.fullmatch(nombre_archivo)
 
     if coincidencia is None:
-        raise ValueError(
-            f"Nombre de archivo NOAA inválido: {nombre_archivo}"
-        )
+        raise ValueError(f"Nombre de archivo NOAA inválido: {nombre_archivo}")
 
     fecha_creacion = datetime.strptime(
         coincidencia.group("fecha_creacion"),

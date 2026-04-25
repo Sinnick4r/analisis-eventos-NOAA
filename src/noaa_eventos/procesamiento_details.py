@@ -29,7 +29,7 @@ COLUMNAS_DANIO_DETAILS: tuple[str, ...] = (
 
 
 def procesar_details(datos: pd.DataFrame) -> pd.DataFrame:
-    #Procesa el dataset NOAA Storm Events details
+    # Procesa el dataset NOAA Storm Events details
 
     datos_procesados = normalizar_columnas(datos)
     datos_procesados = limpiar_strings_vacios(datos_procesados)
@@ -48,7 +48,7 @@ def procesar_details(datos: pd.DataFrame) -> pd.DataFrame:
 
 
 def convertir_columnas_danio_details(datos: pd.DataFrame) -> pd.DataFrame:
-    #Convierte columnas de daños de details si están presentes
+    # Convierte columnas de daños de details si están presentes
     datos_convertidos = datos.copy()
 
     for columna in COLUMNAS_DANIO_DETAILS:

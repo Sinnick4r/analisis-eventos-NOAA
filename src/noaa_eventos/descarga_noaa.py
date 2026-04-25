@@ -18,14 +18,13 @@ URL_BASE_NOAA: Final[str] = (
 
 PATRON_LINK_CSV: Final[re.Pattern[str]] = re.compile(
     r'href="(?P<nombre>StormEvents_'
-    r'(?:details|locations|fatalities)-ftp_v'
+    r"(?:details|locations|fatalities)-ftp_v"
     r'\d+\.\d+_d\d{4}_c\d{8}\.csv(?:\.gz)?)"'
 )
 
 
 @dataclass(frozen=True, slots=True)
 class DescargaNoaa:
-
     archivo: ArchivoNoaa
     url: str
     ruta_local: Path
@@ -36,7 +35,7 @@ def listar_archivos_noaa_disponibles(
     url_base: str = URL_BASE_NOAA,
     timeout: float = 30.0,
 ) -> list[str]:
-    #lista nombres de archivos NOAA disponibles en el índice HTTP
+    # lista nombres de archivos NOAA disponibles en el índice HTTP
 
     respuesta = httpx.get(url_base, timeout=timeout)
     respuesta.raise_for_status()
@@ -81,7 +80,7 @@ def descargar_archivos_noaa_por_anio(
     anio_datos: int,
     url_base: str = URL_BASE_NOAA,
 ) -> list[DescargaNoaa]:
-    #descarga los últimos details, locations y fatalities para un año.
+    # descarga los últimos details, locations y fatalities para un año.
     """
     Raises:
         FileNotFoundError: Si falta algún tipo de archivo para el año.

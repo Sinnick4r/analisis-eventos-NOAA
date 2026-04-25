@@ -21,7 +21,7 @@ COLUMNAS_OBLIGATORIAS_FATALITIES: frozenset[str] = frozenset(
 
 
 def procesar_fatalities(datos: pd.DataFrame) -> pd.DataFrame:
-    #Procesa el dataset NOAA Storm Events fatalities.
+    # Procesa el dataset NOAA Storm Events fatalities.
 
     datos_procesados = normalizar_columnas(datos)
     datos_procesados = limpiar_strings_vacios(datos_procesados)

@@ -22,9 +22,7 @@ def test_patron_link_csv_detecta_archivos_noaa() -> None:
         for coincidencia in PATRON_LINK_CSV.finditer(html)
     ]
 
-    assert nombres == [
-        "StormEvents_details-ftp_v1.0_d2026_c20260421.csv.gz"
-    ]
+    assert nombres == ["StormEvents_details-ftp_v1.0_d2026_c20260421.csv.gz"]
 
 
 def test_listar_archivos_noaa_disponibles_con_mock(
@@ -43,9 +41,7 @@ def test_listar_archivos_noaa_disponibles_con_mock(
 
     nombres = listar_archivos_noaa_disponibles()
 
-    assert nombres == [
-        "StormEvents_details-ftp_v1.0_d2026_c20260421.csv.gz"
-    ]
+    assert nombres == ["StormEvents_details-ftp_v1.0_d2026_c20260421.csv.gz"]
 
 
 def test_descargar_archivo_noaa_con_mock(
