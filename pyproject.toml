@@ -10,6 +10,10 @@ dependencies = [
     "httpx>=0.27.0",
 ]
 
+[project.scripts]
+noaa-descargar = "noaa_eventos.cli_descarga:main"
+noaa-procesar = "noaa_eventos.cli:main"
+
 [dependency-groups]
 dev = [
     "pytest>=8.0.0",
