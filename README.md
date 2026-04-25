@@ -1,6 +1,6 @@
-# Exploración de Datos NOAA 2024
+# Exploración de Datos NOAA 
 
-Este proyecto analiza los datos proporcionados por **NOAA - Natural Hazard Statistics** para el año 2024 (meses de enero a septiembre). El objetivo es explorar y comprender los patrones y el impacto de los desastres naturales reportados en los Estados Unidos. 
+Este proyecto analiza los datos proporcionados por **NOAA - Natural Hazard Statistics**. El objetivo es explorar y comprender los patrones y el impacto de los desastres naturales reportados en los Estados Unidos. 
 Para este proyecto, se utilizaron:
 
 1. **Los datasets públicos del NOAA.**
@@ -60,7 +60,7 @@ Los datos provienen de tres archivos CSV:
 
 1. Clonar el repositorio:
    ```bash
-   git clone https://github.com/sinnick4r/Exploracion_NOAA_2024.git
+   git clone https://github.com/sinnick4r/analisis-eventos-NOAA.git
    ```
 ---
 
