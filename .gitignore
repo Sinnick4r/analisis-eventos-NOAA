@@ -1,17 +1,26 @@
-# Datos originales / RAW
+# Datos originales / RAW historicos
 Data Original/
-data/raw/
-data/interim/
-data/processed/
 
-# Mantener estructura futura si se crean .gitkeep
+# Datos generados por el flujo moderno
+data/raw/*
+data/processed/*
+
+# Mantener estructura versionada
 !data/raw/.gitkeep
-!data/interim/.gitkeep
 !data/processed/.gitkeep
+!data/samples/
+!data/samples/.gitkeep
 
-# Artefactos Power BI pesados
-*.pbix
-*.pbit
+# Reportes generados
+reports/validacion/*
+reports/powerbi/*
+
+# Mantener estructura versionada
+!reports/validacion/.gitkeep
+!reports/powerbi/.gitkeep
+
+# Rezagos historicos locales
+codigo/packageDiagram.md
 
 # Python
 __pycache__/
@@ -23,3 +32,13 @@ __pycache__/
 
 # Entorno
 .env
+
+# Power BI / artefactos pesados
+*.pbix
+*.pbit
+
+# Sistema / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
