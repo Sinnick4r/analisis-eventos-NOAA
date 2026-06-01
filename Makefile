@@ -1,4 +1,4 @@
-.PHONY: instalar formato lint test check
+.PHONY: instalar formato formato-check lint test check
 
 instalar:
 	uv sync
@@ -6,10 +6,13 @@ instalar:
 formato:
 	uv run ruff format .
 
+formato-check:
+	uv run ruff format --check .
+
 lint:
 	uv run ruff check .
 
 test:
 	uv run pytest
 
-check: lint test
+check: formato-check lint test
