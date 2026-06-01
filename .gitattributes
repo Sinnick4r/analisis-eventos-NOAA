@@ -1,5 +1,5 @@
 * text=auto
-
+Makefile text eol=lf
 *.py text eol=lf
 *.md text eol=lf
 *.toml text eol=lf
@@ -17,3 +17,4 @@
 *.gif binary
 *.gz binary
 *.zip binary
+
