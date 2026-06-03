@@ -140,3 +140,63 @@ def test_filtrar_fatalities_sigue_a_details() -> None:
     )
 
     assert set(resultado["event_id"]) == {1, 3}
+
+
+def test_puntos_mapa_cruza_y_calcula_danio() -> None:
+    locations = pd.DataFrame(
+        {
+            "event_id": [1, 2],
+            "latitude": [34.5, 40.0],
+            "longitude": [-87.0, -100.0],
+        }
+    )
+    details = pd.DataFrame(
+        {
+            "event_id": [1, 2],
+            "event_type": ["Flood", "Hail"],
+            "state": ["TEXAS", "OHIO"],
+            "damage_property": [1000.0, None],
+            "damage_crops": [None, 500.0],
+        }
+    )
+
+    resultado = metricas.puntos_mapa(locations, details)
+    danios = dict(
+        zip(resultado["event_type"], resultado["danio"], strict=True)
+    )
+
+    assert len(resultado) == 2
+    assert danios == {"Flood": 1000.0, "Hail": 500.0}
+
+
+def test_puntos_mapa_agrupa_tipos_en_otros() -> None:
+    counts = {"A": 5, "B": 4, "C": 3, "D": 2, "E": 2, "F": 2, "G": 1}
+    tipos: list[str] = []
+    for tipo, n in counts.items():
+        tipos += [tipo] * n
+    ids = list(range(len(tipos)))
+
+    details = pd.DataFrame(
+        {
+            "event_id": ids,
+            "event_type": tipos,
+            "state": ["TX"] * len(ids),
+            "damage_property": [0.0] * len(ids),
+            "damage_crops": [0.0] * len(ids),
+        }
+    )
+    locations = pd.DataFrame(
+        {
+            "event_id": ids,
+            "latitude": [34.0] * len(ids),
+            "longitude": [-90.0] * len(ids),
+        }
+    )
+
+    resultado = metricas.puntos_mapa(locations, details)
+    g_rows = resultado[resultado["event_type"] == "G"]
+
+    # G es el menos frecuente, cae en Otros (TOP_TIPOS_MAPA = 6)
+    assert (g_rows["tipo_color"] == "Otros").all()
+    assert "G" not in set(resultado["tipo_color"])
+    assert "A" in set(resultado["tipo_color"])

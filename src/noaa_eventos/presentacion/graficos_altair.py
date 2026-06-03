@@ -3,12 +3,29 @@ from typing import Final
 import altair as alt
 import pandas as pd
 
+from noaa_eventos.metricas import ETIQUETA_OTROS
+
 # acento para la barra protagonista, gris para el contexto
 COLOR_FOCO: Final[str] = "#1f4e79"
 COLOR_CONTEXTO: Final[str] = "#c8c8c8"
 COLOR_TEXTO: Final[str] = "#3a3a3a"
 
 ALTO_BARRA: Final[int] = 28
+
+# topojson de estados de EE.UU. (lo baja el navegador al renderizar)
+URL_MAPA_USA: Final[str] = (
+    "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json"
+)
+# colores para los tipos con nombre propio; "Otros" siempre en gris
+PALETA_TIPOS: Final[tuple[str, ...]] = (
+    "#1f4e79",
+    "#d1495b",
+    "#2e7d32",
+    "#e08e0b",
+    "#5b3a8e",
+    "#0d7d8c",
+)
+COLOR_OTROS: Final[str] = "#bdbdbd"
 
 MESES_ABREV: Final[tuple[str, ...]] = (
     "Ene",
@@ -198,6 +215,76 @@ def _etiqueta_mes(codigo: str) -> str:
         return texto
 
     return f"{MESES_ABREV[mes - 1]} {anio}"
+
+
+def mapa_eventos(datos: pd.DataFrame) -> alt.Chart:
+    # mapa de puntos: color por tipo, tamaño por daño (escala raiz)
+    dominio, rango = _escala_color_tipos(datos)
+
+    fondo = (
+        alt.Chart(alt.topo_feature(URL_MAPA_USA, "states"))
+        .mark_geoshape(fill="#f0f0f0", stroke="white", strokeWidth=0.5)
+        .project("albersUsa")
+    )
+
+    puntos = (
+        alt.Chart(datos)
+        .mark_circle(opacity=0.6, stroke="white", strokeWidth=0.3)
+        .encode(
+            longitude="longitude:Q",
+            latitude="latitude:Q",
+            color=alt.Color(
+                "tipo_color:N",
+                scale=alt.Scale(domain=dominio, range=rango),
+                legend=alt.Legend(title="Tipo de evento"),
+            ),
+            size=alt.Size(
+                "danio:Q",
+                scale=alt.Scale(type="sqrt", range=[15, 500]),
+                legend=alt.Legend(title="Daño estimado (USD)"),
+            ),
+            tooltip=[
+                alt.Tooltip("event_type:N", title="Tipo"),
+                alt.Tooltip("state:N", title="Estado"),
+                alt.Tooltip("danio:Q", title="Daño USD", format=",.0f"),
+            ],
+        )
+        .project("albersUsa")
+    )
+
+    subtitulo = (
+        f"{len(datos):,} eventos con coordenadas. "
+        "Color por tipo, tamaño por daño estimado"
+    )
+
+    return (
+        (fondo + puntos)
+        .properties(
+            title=_titulo("Dónde ocurrieron los eventos", subtitulo),
+            height=420,
+            width="container",
+        )
+        .configure_view(stroke=None)
+    )
+
+
+def _escala_color_tipos(
+    datos: pd.DataFrame,
+) -> tuple[list[str], list[str]]:
+    # arma dominio/rango de color: tipos nombrados + Otros en gris al final
+    nombrados = [
+        tipo
+        for tipo in datos["tipo_color"].value_counts().index
+        if tipo != ETIQUETA_OTROS
+    ]
+    dominio = list(nombrados)
+    rango = list(PALETA_TIPOS[: len(nombrados)])
+
+    if (datos["tipo_color"] == ETIQUETA_OTROS).any():
+        dominio.append(ETIQUETA_OTROS)
+        rango.append(COLOR_OTROS)
+
+    return dominio, rango
 
 
 def _titulo(texto: str, subtitulo: str) -> alt.TitleParams:

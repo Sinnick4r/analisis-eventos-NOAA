@@ -9,6 +9,10 @@ ETIQUETAS_FATALIDAD: Final[dict[str, str]] = {
     "I": "Indirecta",
 }
 
+# cuantos tipos de evento conservan color en el mapa; el resto va a Otros
+TOP_TIPOS_MAPA: Final[int] = 6
+ETIQUETA_OTROS: Final[str] = "Otros"
+
 
 def filtrar_eventos(
     details: pd.DataFrame,
@@ -36,6 +40,36 @@ def filtrar_fatalities_por_eventos(
     ids = details_filtrado["event_id"].unique()
 
     return fatalities[fatalities["event_id"].isin(ids)]
+
+
+def puntos_mapa(
+    locations: pd.DataFrame,
+    details: pd.DataFrame,
+) -> pd.DataFrame:
+    # cruza locations con details y arma columnas listas para mapear
+    columnas = [
+        "event_id",
+        "event_type",
+        "state",
+        "damage_property",
+        "damage_crops",
+    ]
+    cruce = locations.merge(details[columnas], on="event_id", how="inner")
+
+    cruce["danio"] = cruce["damage_property"].fillna(0) + cruce[
+        "damage_crops"
+    ].fillna(0)
+
+    # los tipos mas frecuentes conservan nombre; el resto cae en "Otros"
+    top = cruce["event_type"].value_counts().head(TOP_TIPOS_MAPA).index
+    cruce["tipo_color"] = cruce["event_type"].where(
+        cruce["event_type"].isin(top),
+        ETIQUETA_OTROS,
+    )
+
+    return cruce[
+        ["latitude", "longitude", "event_type", "tipo_color", "state", "danio"]
+    ]
 
 
 def eventos_por_mes(details: pd.DataFrame) -> pd.DataFrame:

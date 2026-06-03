@@ -17,6 +17,7 @@ DIR_PROCESADO: Final[Path] = Path(
 )
 ARCHIVO_DETAILS: Final[str] = "StormEvents_details_Limpio.csv"
 ARCHIVO_FATALITIES: Final[str] = "StormEvents_fatalities_Limpio.csv"
+ARCHIVO_LOCATIONS: Final[str] = "StormEvents_locations_Limpio.csv"
 
 TOP_N: Final[int] = 10
 
@@ -80,6 +81,21 @@ def mostrar_kpis(details: pd.DataFrame, fatalities: pd.DataFrame) -> None:
     col4.metric("Lesiones", f"{kpis.lesiones_totales:,}")
 
 
+def mostrar_mapa(
+    locations: pd.DataFrame | None,
+    details: pd.DataFrame,
+) -> None:
+    if locations is None:
+        st.caption("Sin dataset de locations: se omite el mapa.")
+        return
+
+    # el cruce con details ya filtrado aplica los filtros al mapa
+    chart_o_aviso(
+        metricas.puntos_mapa(locations, details),
+        graficos.mapa_eventos,
+    )
+
+
 def mostrar_charts(
     details: pd.DataFrame,
     fatalities: pd.DataFrame | None,
@@ -133,6 +149,7 @@ def main() -> None:
 
     details = cargar_dataset(ARCHIVO_DETAILS, details_subido)
     fatalities = cargar_dataset(ARCHIVO_FATALITIES, fatalities_subido)
+    locations = cargar_dataset(ARCHIVO_LOCATIONS, None)
 
     if details is None:
         st.warning(
@@ -166,6 +183,7 @@ def main() -> None:
 
     mostrar_kpis(details_filtrado, fatalities_kpis)
     st.divider()
+    mostrar_mapa(locations, details_filtrado)
     mostrar_charts(details_filtrado, fatalities_filtrado)
 
 
