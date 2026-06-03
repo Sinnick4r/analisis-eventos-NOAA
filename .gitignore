@@ -4,7 +4,9 @@ Data Original/
 # Datos generados por el flujo moderno
 data/raw/*
 data/processed/*
-
+!data/processed/StormEvents_details_Limpio.csv
+!data/processed/StormEvents_fatalities_Limpio.csv
+!data/processed/StormEvents_locations_Limpio.csv
 # Mantener estructura versionada
 !data/raw/.gitkeep
 !data/processed/.gitkeep
