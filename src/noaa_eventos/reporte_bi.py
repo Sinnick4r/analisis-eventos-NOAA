@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.axes import Axes
 
+from noaa_eventos import metricas
 from noaa_eventos.io import leer_csv
 
 
@@ -158,15 +159,10 @@ def graficar_eventos_por_mes(
     ruta_salida: Path,
 ) -> None:
 
-    eventos_mes = (
-        details.assign(mes=details["begin_yearmonth"].astype(str))
-        .groupby("mes")
-        .size()
-        .sort_index()
-    )
+    datos = metricas.eventos_por_mes(details)
 
     fig, ax = plt.subplots(figsize=(10, 5))
-    eventos_mes.plot(kind="bar", ax=ax)
+    ax.bar(datos["mes"], datos["eventos"])
     ax.set_title("Eventos por mes")
     ax.set_xlabel("Mes")
     ax.set_ylabel("Cantidad de eventos")
@@ -181,10 +177,11 @@ def graficar_top_tipos_evento(
     ruta_salida: Path,
 ) -> None:
 
-    top_eventos = details["event_type"].value_counts().head(10).sort_values()
+    # se invierte para que la barra mas grande quede arriba
+    datos = metricas.top_tipos_evento(details, n=10).iloc[::-1]
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    top_eventos.plot(kind="barh", ax=ax)
+    ax.barh(datos["event_type"], datos["eventos"])
     ax.set_title("Top 10 tipos de evento")
     ax.set_xlabel("Cantidad de eventos")
     ax.set_ylabel("Tipo de evento")
@@ -198,10 +195,10 @@ def graficar_top_estados_eventos(
     ruta_salida: Path,
 ) -> None:
 
-    top_estados = details["state"].value_counts().head(10).sort_values()
+    datos = metricas.top_estados_eventos(details, n=10).iloc[::-1]
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    top_estados.plot(kind="barh", ax=ax)
+    ax.barh(datos["state"], datos["eventos"])
     ax.set_title("Top 10 estados por cantidad de eventos")
     ax.set_xlabel("Cantidad de eventos")
     ax.set_ylabel("Estado")
@@ -215,23 +212,10 @@ def graficar_top_estados_danios(
     ruta_salida: Path,
 ) -> None:
 
-    datos = details.copy()
-    datos["danios_totales"] = datos["damage_property"].fillna(0) + datos[
-        "damage_crops"
-    ].fillna(0)
-
-    top_danios = (
-        datos.groupby("state")["danios_totales"]
-        .sum()
-        .sort_values(ascending=False)
-        .head(10)
-        .sort_values()
-    )
-
-    top_danios_millones = top_danios / 1_000_000
+    datos = metricas.top_estados_danios(details, n=10).iloc[::-1]
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    top_danios_millones.plot(kind="barh", ax=ax)
+    ax.barh(datos["state"], datos["danios_millones"])
     ax.set_title("Top 10 estados por daños estimados")
     ax.set_xlabel("Daños estimados, millones USD")
     ax.set_ylabel("Estado")
@@ -245,20 +229,10 @@ def graficar_fatalidades_por_tipo(
     ruta_salida: Path,
 ) -> None:
 
-    fatalidades_tipo = (
-        fatalities["fatality_type"]
-        .replace(
-            {
-                "D": "Directa",
-                "I": "Indirecta",
-            }
-        )
-        .value_counts()
-        .sort_values()
-    )
+    datos = metricas.fatalidades_por_tipo(fatalities).iloc[::-1]
 
     fig, ax = plt.subplots(figsize=(8, 5))
-    fatalidades_tipo.plot(kind="barh", ax=ax)
+    ax.barh(datos["tipo_fatalidad"], datos["registros"])
     ax.set_title("Fatalidades por tipo")
     ax.set_xlabel("Cantidad de registros")
     ax.set_ylabel("Tipo de fatalidad")
@@ -371,9 +345,9 @@ def dibujar_top_tipos_evento(
     Side effects:
         Modifica un eje de Matplotlib.
     """
-    top_eventos = details["event_type"].value_counts().head(8).sort_values()
+    datos = metricas.top_tipos_evento(details, n=8).iloc[::-1]
 
-    top_eventos.plot(kind="barh", ax=eje)
+    eje.barh(datos["event_type"], datos["eventos"])
     eje.set_title("Top tipos de evento")
     eje.set_xlabel("Eventos")
     eje.set_ylabel("")
@@ -384,9 +358,9 @@ def dibujar_top_estados_eventos(
     eje: Axes,
 ) -> None:
 
-    top_estados = details["state"].value_counts().head(8).sort_values()
+    datos = metricas.top_estados_eventos(details, n=8).iloc[::-1]
 
-    top_estados.plot(kind="barh", ax=eje)
+    eje.barh(datos["state"], datos["eventos"])
     eje.set_title("Top estados por eventos")
     eje.set_xlabel("Eventos")
     eje.set_ylabel("")
@@ -397,21 +371,9 @@ def dibujar_top_estados_danios(
     eje: Axes,
 ) -> None:
 
-    datos = details.copy()
-    datos["danios_totales"] = datos["damage_property"].fillna(0) + datos[
-        "damage_crops"
-    ].fillna(0)
+    datos = metricas.top_estados_danios(details, n=8).iloc[::-1]
 
-    top_danios = (
-        datos.groupby("state")["danios_totales"]
-        .sum()
-        .sort_values(ascending=False)
-        .head(8)
-        .sort_values()
-        / 1_000_000
-    )
-
-    top_danios.plot(kind="barh", ax=eje)
+    eje.barh(datos["state"], datos["danios_millones"])
     eje.set_title("Top estados por daños")
     eje.set_xlabel("Millones USD")
     eje.set_ylabel("")
@@ -422,19 +384,9 @@ def dibujar_fatalidades_tipo(
     eje: Axes,
 ) -> None:
 
-    fatalidades_tipo = (
-        fatalities["fatality_type"]
-        .replace(
-            {
-                "D": "Directa",
-                "I": "Indirecta",
-            }
-        )
-        .value_counts()
-        .sort_values()
-    )
+    datos = metricas.fatalidades_por_tipo(fatalities).iloc[::-1]
 
-    fatalidades_tipo.plot(kind="barh", ax=eje)
+    eje.barh(datos["tipo_fatalidad"], datos["registros"])
     eje.set_title("Fatalidades por tipo")
     eje.set_xlabel("Registros")
     eje.set_ylabel("")
