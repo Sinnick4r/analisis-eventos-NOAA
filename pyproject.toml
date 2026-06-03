@@ -10,6 +10,7 @@ dependencies = [
     "httpx>=0.27.0",
     "matplotlib>=3.10.9",
     "altair>=6.1.0",
+    "streamlit>=1.58.0",
 ]
 
 
