@@ -10,6 +10,21 @@ COLOR_TEXTO: Final[str] = "#3a3a3a"
 
 ALTO_BARRA: Final[int] = 28
 
+MESES_ABREV: Final[tuple[str, ...]] = (
+    "Ene",
+    "Feb",
+    "Mar",
+    "Abr",
+    "May",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dic",
+)
+
 
 def barras_ranking(
     datos: pd.DataFrame,
@@ -23,6 +38,9 @@ def barras_ranking(
     # barras horizontales: la categoria top resaltada, el resto en gris
     categoria_foco = datos.loc[datos[campo_valor].idxmax(), campo_categoria]
 
+    # headroom a la derecha para que la etiqueta de la barra top no se corte
+    tope = datos[campo_valor].max() * 1.18
+
     base = alt.Chart(datos).encode(
         y=alt.Y(
             f"{campo_categoria}:N",
@@ -30,7 +48,11 @@ def barras_ranking(
             title=None,
             axis=alt.Axis(labelColor=COLOR_TEXTO, ticks=False, domain=False),
         ),
-        x=alt.X(f"{campo_valor}:Q", axis=None),
+        x=alt.X(
+            f"{campo_valor}:Q",
+            axis=None,
+            scale=alt.Scale(domain=[0, tope]),
+        ),
     )
 
     barras = base.mark_bar().encode(
@@ -115,15 +137,22 @@ def grafico_fatalidades_por_tipo(datos: pd.DataFrame) -> alt.Chart:
 
 def grafico_eventos_por_mes(datos: pd.DataFrame) -> alt.Chart:
     # serie temporal: linea sobria con el pico resaltado
+    datos = datos.assign(mes_label=datos["mes"].map(_etiqueta_mes))
     fila_pico = datos.loc[datos["eventos"].idxmax()]
+
+    # datos ya viene cronologico desde metricas, mantenemos ese orden
+    orden_meses = datos["mes_label"].tolist()
+
     subtitulo = (
-        f"Pico en {fila_pico['mes']} con {int(fila_pico['eventos']):,} eventos"
+        f"Pico en {fila_pico['mes_label']} con "
+        f"{int(fila_pico['eventos']):,} eventos"
     )
 
     base = alt.Chart(datos).encode(
         x=alt.X(
-            "mes:N",
+            "mes_label:N",
             title=None,
+            sort=orden_meses,
             axis=alt.Axis(labelColor=COLOR_TEXTO, ticks=False, domain=False),
         ),
         y=alt.Y(
@@ -137,7 +166,10 @@ def grafico_eventos_por_mes(datos: pd.DataFrame) -> alt.Chart:
 
     puntos = base.mark_point(filled=True, size=70).encode(
         color=alt.condition(
-            alt.FieldEqualPredicate(field="mes", equal=fila_pico["mes"]),
+            alt.FieldEqualPredicate(
+                field="mes_label",
+                equal=fila_pico["mes_label"],
+            ),
             alt.value(COLOR_FOCO),
             alt.value(COLOR_CONTEXTO),
         )
@@ -152,6 +184,20 @@ def grafico_eventos_por_mes(datos: pd.DataFrame) -> alt.Chart:
         )
         .configure_view(stroke=None)
     )
+
+
+def _etiqueta_mes(codigo: str) -> str:
+    # pasa "202601" a "Ene 2026"; si no matchea, devuelve el codigo crudo
+    texto = str(codigo)
+    if len(texto) != 6 or not texto.isdigit():
+        return texto
+
+    anio = texto[:4]
+    mes = int(texto[4:6])
+    if not 1 <= mes <= 12:
+        return texto
+
+    return f"{MESES_ABREV[mes - 1]} {anio}"
 
 
 def _titulo(texto: str, subtitulo: str) -> alt.TitleParams:
