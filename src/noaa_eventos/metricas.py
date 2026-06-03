@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Final
 
 import pandas as pd
@@ -74,4 +75,70 @@ def fatalidades_por_tipo(fatalities: pd.DataFrame) -> pd.DataFrame:
     )
     conteo = etiquetas.value_counts()
 
-    return conteo.rename("registros").rename_axis("tipo_fatalidad").reset_index()
+    return (
+        conteo.rename("registros").rename_axis("tipo_fatalidad").reset_index()
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class KpisBi:
+    # KPIs principales
+
+    total_eventos: int
+    estados_afectados: int
+    tipos_evento: int
+    danios_estimados_totales: float
+    muertes_totales: int
+    lesiones_totales: int
+    eventos_con_fatalidades: int
+
+
+def calcular_kpis(
+    details: pd.DataFrame,
+    fatalities: pd.DataFrame,
+) -> KpisBi:
+    # calcula KPIs principales
+
+    danios_propiedad = details.get(
+        "damage_property",
+        pd.Series(dtype="float64"),
+    ).fillna(0)
+
+    danios_cultivos = details.get(
+        "damage_crops",
+        pd.Series(dtype="float64"),
+    ).fillna(0)
+
+    muertes_directas = details.get(
+        "deaths_direct",
+        pd.Series(dtype="int64"),
+    ).fillna(0)
+
+    muertes_indirectas = details.get(
+        "deaths_indirect",
+        pd.Series(dtype="int64"),
+    ).fillna(0)
+
+    lesiones_directas = details.get(
+        "injuries_direct",
+        pd.Series(dtype="int64"),
+    ).fillna(0)
+
+    lesiones_indirectas = details.get(
+        "injuries_indirect",
+        pd.Series(dtype="int64"),
+    ).fillna(0)
+
+    return KpisBi(
+        total_eventos=len(details),
+        estados_afectados=int(details["state"].nunique()),
+        tipos_evento=int(details["event_type"].nunique()),
+        danios_estimados_totales=float(
+            danios_propiedad.sum() + danios_cultivos.sum()
+        ),
+        muertes_totales=int(muertes_directas.sum() + muertes_indirectas.sum()),
+        lesiones_totales=int(
+            lesiones_directas.sum() + lesiones_indirectas.sum()
+        ),
+        eventos_con_fatalidades=int(fatalities["event_id"].nunique()),
+    )
