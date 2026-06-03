@@ -1,11 +1,13 @@
 import os
+from collections.abc import Callable
 from pathlib import Path
 from typing import Final
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 
-from noaa_eventos.presentacion import graficos_altair as graficos
+from noaa_eventos import graficos_altair as graficos
 from noaa_eventos import metricas
 from noaa_eventos.metricas import calcular_kpis
 
@@ -40,6 +42,31 @@ def cargar_dataset(
     return cargar_csv(ruta)
 
 
+def construir_filtros(details: pd.DataFrame) -> tuple[list[str], list[str]]:
+    # las opciones salen del dataset completo, no del filtrado
+    estados = sorted(details["state"].dropna().unique())
+    tipos = sorted(details["event_type"].dropna().unique())
+
+    with st.sidebar:
+        st.header("Filtros")
+        sel_estados = st.multiselect("Estado", estados)
+        sel_tipos = st.multiselect("Tipo de evento", tipos)
+
+    return sel_estados, sel_tipos
+
+
+def chart_o_aviso(
+    datos: pd.DataFrame,
+    constructor: Callable[[pd.DataFrame], alt.Chart],
+) -> None:
+    # muestra el grafico o un aviso corto si la seleccion quedo vacia
+    if datos.empty:
+        st.info("Sin datos para esta selección")
+        return
+
+    st.altair_chart(constructor(datos), width="stretch", theme=None)
+
+
 def mostrar_kpis(details: pd.DataFrame, fatalities: pd.DataFrame) -> None:
     kpis = calcular_kpis(details, fatalities)
 
@@ -58,48 +85,35 @@ def mostrar_charts(
     fatalities: pd.DataFrame | None,
 ) -> None:
     # el grafico protagonista (danios) va primero y a todo el ancho
-    st.altair_chart(
-        graficos.grafico_top_estados_danios(
-            metricas.top_estados_danios(details, n=TOP_N)
-        ),
-        width="stretch",
-        theme=None,
+    chart_o_aviso(
+        metricas.top_estados_danios(details, n=TOP_N),
+        graficos.grafico_top_estados_danios,
     )
 
     izquierda, derecha = st.columns(2)
     with izquierda:
-        st.altair_chart(
-            graficos.grafico_top_tipos_evento(
-                metricas.top_tipos_evento(details, n=TOP_N)
-            ),
-            width="stretch",
-            theme=None,
+        chart_o_aviso(
+            metricas.top_tipos_evento(details, n=TOP_N),
+            graficos.grafico_top_tipos_evento,
         )
     with derecha:
-        st.altair_chart(
-            graficos.grafico_top_estados_eventos(
-                metricas.top_estados_eventos(details, n=TOP_N)
-            ),
-            width="stretch",
-            theme=None,
+        chart_o_aviso(
+            metricas.top_estados_eventos(details, n=TOP_N),
+            graficos.grafico_top_estados_eventos,
         )
 
-    st.altair_chart(
-        graficos.grafico_eventos_por_mes(metricas.eventos_por_mes(details)),
-        width="stretch",
-        theme=None,
+    chart_o_aviso(
+        metricas.eventos_por_mes(details),
+        graficos.grafico_eventos_por_mes,
     )
 
     if fatalities is None:
         st.caption("Sin dataset de fatalities: se omite ese gráfico.")
         return
 
-    st.altair_chart(
-        graficos.grafico_fatalidades_por_tipo(
-            metricas.fatalidades_por_tipo(fatalities)
-        ),
-        width="stretch",
-        theme=None,
+    chart_o_aviso(
+        metricas.fatalidades_por_tipo(fatalities),
+        graficos.grafico_fatalidades_por_tipo,
     )
 
 
@@ -127,16 +141,32 @@ def main() -> None:
         )
         st.stop()
 
-    # fatalities es opcional: si falta, KPIs sin esa fuente
-    fatalities_kpis = (
-        fatalities
+    sel_estados, sel_tipos = construir_filtros(details)
+    details_filtrado = metricas.filtrar_eventos(
+        details,
+        estados=sel_estados,
+        tipos_evento=sel_tipos,
+    )
+
+    # fatalities sigue al filtro de details; si falta, queda None
+    fatalities_filtrado = (
+        metricas.filtrar_fatalities_por_eventos(fatalities, details_filtrado)
         if fatalities is not None
+        else None
+    )
+
+    st.caption(f"{len(details_filtrado):,} eventos en la selección")
+
+    # KPIs: fatalities vacio si falta el dataset
+    fatalities_kpis = (
+        fatalities_filtrado
+        if fatalities_filtrado is not None
         else pd.DataFrame({"event_id": []})
     )
 
-    mostrar_kpis(details, fatalities_kpis)
+    mostrar_kpis(details_filtrado, fatalities_kpis)
     st.divider()
-    mostrar_charts(details, fatalities)
+    mostrar_charts(details_filtrado, fatalities_filtrado)
 
 
 main()

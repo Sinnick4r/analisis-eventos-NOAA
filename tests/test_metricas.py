@@ -81,3 +81,62 @@ def test_fatalidades_por_tipo_preserva_valor_inesperado() -> None:
     resultado = metricas.fatalidades_por_tipo(fatalities)
 
     assert "X" in resultado["tipo_fatalidad"].tolist()
+
+
+def test_filtrar_eventos_por_estado() -> None:
+    details = pd.DataFrame(
+        {
+            "state": ["TEXAS", "OHIO", "TEXAS"],
+            "event_type": ["Flood", "Hail", "Hail"],
+        }
+    )
+
+    resultado = metricas.filtrar_eventos(details, estados=["TEXAS"])
+
+    assert len(resultado) == 2
+    assert set(resultado["state"]) == {"TEXAS"}
+
+
+def test_filtrar_eventos_combinado() -> None:
+    details = pd.DataFrame(
+        {
+            "state": ["TEXAS", "TEXAS", "OHIO"],
+            "event_type": ["Flood", "Hail", "Hail"],
+        }
+    )
+
+    resultado = metricas.filtrar_eventos(
+        details,
+        estados=["TEXAS"],
+        tipos_evento=["Hail"],
+    )
+
+    assert len(resultado) == 1
+    assert resultado.iloc[0]["state"] == "TEXAS"
+    assert resultado.iloc[0]["event_type"] == "Hail"
+
+
+def test_filtrar_eventos_sin_filtro_devuelve_todo() -> None:
+    details = pd.DataFrame(
+        {"state": ["TEXAS", "OHIO"], "event_type": ["A", "B"]}
+    )
+
+    resultado = metricas.filtrar_eventos(
+        details, estados=None, tipos_evento=[]
+    )
+
+    assert len(resultado) == 2
+
+
+def test_filtrar_fatalities_sigue_a_details() -> None:
+    fatalities = pd.DataFrame(
+        {"event_id": [1, 2, 3], "fatality_type": ["D"] * 3}
+    )
+    details_filtrado = pd.DataFrame({"event_id": [1, 3]})
+
+    resultado = metricas.filtrar_fatalities_por_eventos(
+        fatalities,
+        details_filtrado,
+    )
+
+    assert set(resultado["event_id"]) == {1, 3}

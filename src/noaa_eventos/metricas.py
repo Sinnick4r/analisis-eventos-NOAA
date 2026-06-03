@@ -10,6 +10,34 @@ ETIQUETAS_FATALIDAD: Final[dict[str, str]] = {
 }
 
 
+def filtrar_eventos(
+    details: pd.DataFrame,
+    *,
+    estados: list[str] | None = None,
+    tipos_evento: list[str] | None = None,
+) -> pd.DataFrame:
+    # filtra details por estado y/o tipo; None o lista vacia = sin filtro
+    filtrado = details
+
+    if estados:
+        filtrado = filtrado[filtrado["state"].isin(estados)]
+
+    if tipos_evento:
+        filtrado = filtrado[filtrado["event_type"].isin(tipos_evento)]
+
+    return filtrado
+
+
+def filtrar_fatalities_por_eventos(
+    fatalities: pd.DataFrame,
+    details_filtrado: pd.DataFrame,
+) -> pd.DataFrame:
+    # se queda con las fatalidades de los eventos que pasaron el filtro
+    ids = details_filtrado["event_id"].unique()
+
+    return fatalities[fatalities["event_id"].isin(ids)]
+
+
 def eventos_por_mes(details: pd.DataFrame) -> pd.DataFrame:
     # cuenta eventos por mes, ordenado cronologicamente
     conteo = (
