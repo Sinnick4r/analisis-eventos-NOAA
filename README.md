@@ -1,3 +1,7 @@
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://eventos-noaa.streamlit.app)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+[![Ruff](https://img.shields.io/badge/lint-ruff-261230)](https://github.com/astral-sh/ruff)
+
 # analisis-eventos-NOAA
 
 Proyecto de análisis reproducible sobre eventos meteorológicos severos y desastres naturales registrados por NOAA/NCEI Storm Events.
@@ -14,6 +18,15 @@ Construir un flujo reproducible para:
 - generar archivos procesados listos para análisis exploratorio y visualización;
 - mantener una base clara para Power BI y futuras etapas analíticas.
 
+## Dashboard interactivo
+
+Dashboard en vivo, desplegado en Streamlit Community Cloud, sobre los datos procesados por el pipeline:
+
+🔗 **[eventos-noaa.streamlit.app](https://eventos-noaa.streamlit.app)**
+
+![Dashboard NOAA Storm Events en Streamlit](docs/assets/dashboard_streamlit.png)
+
+KPIs principales (eventos, daños estimados, muertes, lesiones) y gráficos con foco analítico siguiendo principios de Storytelling with Data (Knaflic): barra protagonista resaltada, etiquetas directas, jerarquía visual y subtítulos que enuncian la conclusión. Reusa la misma capa de métricas (`metricas.py`) que alimenta los reportes del pipeline, sin duplicar lógica.
 
 ## Fuente de datos
 
@@ -57,7 +70,7 @@ Estado verificado localmente:
 uv run noaa-descargar -> descarga los 3 RAW oficiales
 uv run noaa-procesar  -> genera los 3 CSV limpios
 make check             -> ruff + pytest
-pytest                 -> 65 passed
+pytest                 -> 79 passed
 ```
 
 Resultado esperado:
@@ -73,21 +86,19 @@ data/processed/
 ├── StormEvents_locations_Limpio.csv
 └── StormEvents_fatalities_Limpio.csv
 ```
-## Vista ejecutiva
-
-![Dashboard ejecutivo NOAA 2026](docs/assets/bi/dashboard_noaa_2026.png)
-
 
 ## Stack técnico
 
 - Python 3.11+
 - pandas
 - httpx
+- Streamlit (dashboard interactivo)
+- Altair (visualización)
+- matplotlib (reportes estáticos)
 - uv
 - ruff
 - pytest
 - Makefile
-- Power BI
 
 ## Instalacion
 
@@ -146,7 +157,9 @@ make check
 Equivale a:
 
 ```bash
-uv run ruff check .
+uv run ruff check
+uv run ruff format
+uv run ruff lint
 uv run pytest
 ```
 
@@ -167,17 +180,17 @@ uv run pytest
 ├── config/
 ├── data/
 │   ├── raw/              # RAW descargados, ignorados por Git
-│   ├── processed/        # CSV procesados, ignorados por Git
+│   ├── processed/        # CSV procesados, subidos en conecepto de demo para iniciar dashboard
 │   └── samples/
 ├── docs/
 │   └── decisiones/
 ├── reports/
-│   ├── powerbi/
 │   └── validacion/
 ├── src/
 │   └── noaa_eventos/
 │       ├── archivos_noaa.py
 │       ├── cli.py
+│       ├── cli_bi.py
 │       ├── cli_descarga.py
 │       ├── descarga_noaa.py
 │       ├── danios.py
@@ -187,8 +200,13 @@ uv run pytest
 │       ├── procesamiento_details.py
 │       ├── procesamiento_fatalities.py
 │       ├── procesamiento_locations.py
-│       └── validacion.py
+│       ├── validacion.py
+│       ├── metricas.py
+│       ├── reporte_bi.py
+│       └── presentacion/
+│           └── graficos_altair.py
 ├── tests/
+├── streamlit_app.py
 ├── pyproject.toml
 ├── uv.lock
 ├── Makefile
@@ -218,7 +236,9 @@ conversión de daños K/M/B
         ↓
 data/processed/
         ↓
-Power BI / análisis exploratorio
+generacion de metricas /cruce de datasets
+        ↓
+dashboards en streamlit
 ```
 
 ## Módulos principales
@@ -237,6 +257,10 @@ Power BI / análisis exploratorio
 | `procesamiento_details.py` | Procesamiento del dataset `details`. |
 | `procesamiento_locations.py` | Procesamiento del dataset `locations`. |
 | `procesamiento_fatalities.py` | Procesamiento del dataset `fatalities`. |
+| `metricas.py` | Agregaciones puras y KPIs, fuente única para reportes y dashboard. |
+| `reporte_bi.py` | Reportes estáticos en matplotlib sobre la capa de métricas. |
+| `cli_bi.py` | CLI de generación de reportes BI. |
+| `presentacion/graficos_altair.py` | Charts Altair del dashboard con foco Knaflic. |
 
 ## Validaciones implementadas
 
@@ -305,7 +329,7 @@ Los archivos procesados se generan en:
 data/processed/
 ```
 
-Ambas carpetas están ignoradas por Git para evitar versionar archivos pesados o generados.
+Ambas carpetas están ignoradas por Git, con una excepción: se versiona un snapshot demo de `details`, `locations` y `fatalities` procesados en `data/processed/`, para que el dashboard publicado arranque con datos reales. El resto de los datasets queda fuera del control de versiones.
 
 ## Testing
 
@@ -332,7 +356,7 @@ make check
 Estado actual verificado:
 
 ```text
-65 passed
+79 passed
 ```
 
 ## Decisiones de diseño
@@ -352,26 +376,6 @@ uv run noaa-procesar ...
 
 Esto permite conservar el RAW como snapshot auditable antes de generar datos procesados.
 
-### No  se agrega ML
-
-El proyecto no incluye modelos predictivos. Antes de avanzar hacia ML, se prioriza cerrar contratos de datos, reproducibilidad, validación y visualización.
-
-## Power BI
-
-La salida moderna esperada para Power BI son los CSV procesados:
-
-```text
-data/processed/StormEvents_details_Limpio.csv
-data/processed/StormEvents_locations_Limpio.csv
-data/processed/StormEvents_fatalities_Limpio.csv
-```
-
-Modelo sugerido:
-
-```text
-details.event_id 1 - * locations.event_id
-details.event_id 1 - * fatalities.event_id
-```
 
 ## Alcance actual
 
@@ -391,31 +395,9 @@ No incluido por ahora:
 - automatización mensual con GitHub Actions;
 - almacenamiento cloud;
 - base de datos;
-- dashboard Power BI final rediseñado;
 - modelo de machine learning;
 - cruce con fuentes externas.
 
-## Roadmap cercano
-
-### Prioridad alta
-
-- agregar un reporte simple de validación de outputs;
-- revisar visualización Power BI con los CSV procesados actuales.
-
-### Prioridad media
-
-- agregar GitHub Actions para `ruff` y `pytest`;
-- mejorar reporte de validación;
-- agregar diccionario de datos propio;
-- documentar modelo Power BI.
-
-### Prioridad baja
-
-- automatizar actualización mensual;
-- agregar fuentes externas;
-- migrar outputs a formato Parquet;
-- incorporar análisis geoespacial;
-- evaluar hipótesis o modelos predictivos.
 
 ## Historia del proyecto
 
@@ -441,7 +423,7 @@ análisis y visualización
 
 ## Licencia y uso de datos
 
-Los datos pertenecen a NOAA/NCEI. Este repositorio contiene código de procesamiento y análisis; no versiona los datasets RAW ni procesados.
+Los datos pertenecen a NOAA/NCEI. Este repositorio contiene código de procesamiento y análisis; no versiona los datasets completos, solo un snapshot demo reducido para alimentar el dashboard.
 
 Consultar las condiciones y documentación oficial en:
 
