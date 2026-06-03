@@ -7,7 +7,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from noaa_eventos import graficos_altair as graficos
+from noaa_eventos.presentacion import graficos_altair as graficos
 from noaa_eventos import metricas
 from noaa_eventos.metricas import calcular_kpis
 
