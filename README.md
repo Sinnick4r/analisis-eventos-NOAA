@@ -1,5 +1,5 @@
 [![CI](https://github.com/Sinnick4r/analisis-eventos-NOAA/actions/workflows/ci.yml/badge.svg)](https://github.com/Sinnick4r/analisis-eventos-NOAA/actions/workflows/ci.yml)
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://eventos-noaa.streamlit.app)
+[![Streamlit App](https://img.shields.io/badge/Streamlit-dashboard%20en%20vivo-FF4B4B?logo=streamlit&logoColor=white)](https://eventos-noaa.streamlit.app)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 [![Ruff](https://img.shields.io/badge/lint-ruff-261230)](https://github.com/astral-sh/ruff)
 
